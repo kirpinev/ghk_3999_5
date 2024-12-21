@@ -188,6 +188,8 @@ export const App = () => {
             bold={false}
             block={true}
             size={48}
+            max={140000}
+            error={amount > 140000}
           />
 
           <Typography.Text
@@ -271,19 +273,23 @@ export const App = () => {
                 Подтверждаю своё ознакомление и согласие со всеми указанными
                 далее условиями, а также с получением услуг
               </Typography.Text>
-              {error && !checked.checkbox_1 && (
-                <>
-                  <Gap size={16} />
-                  <Typography.Text
-                    tag="p"
-                    view="primary-medium"
-                    color="negative"
-                    style={{ marginBottom: 0, flexGrow: 1 }}
-                  >
-                    Согласие обязательно
-                  </Typography.Text>
-                </>
-              )}
+              {error &&
+                !checked.checkbox_1 &&
+                (!checked.checkbox_2 ||
+                  !checked.checkbox_3 ||
+                  !checked.checkbox_4) && (
+                  <>
+                    <Gap size={16} />
+                    <Typography.Text
+                      tag="p"
+                      view="primary-medium"
+                      color="negative"
+                      style={{ marginBottom: 0, flexGrow: 1 }}
+                    >
+                      Согласие обязательно
+                    </Typography.Text>
+                  </>
+                )}
             </div>
           </div>
 
@@ -745,7 +751,6 @@ export const App = () => {
           <ButtonMobile
             onClick={() => {
               if (
-                !checked.checkbox_1 ||
                 !checked.checkbox_2 ||
                 !checked.checkbox_3 ||
                 !checked.checkbox_4
