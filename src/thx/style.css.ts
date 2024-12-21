@@ -11,7 +11,7 @@ const container = style({
 });
 
 const rocket = style({
-  marginTop: "5rem",
+  // marginTop: "5rem",
 });
 
 export const thxSt = {
