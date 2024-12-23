@@ -14,16 +14,14 @@ import { DocumentsLinesMIcon } from "@alfalab/icons-glyph/DocumentsLinesMIcon";
 import { Collapse } from "@alfalab/core-components/collapse";
 import { ButtonMobile } from "@alfalab/core-components/button/mobile";
 import { Typography } from "@alfalab/core-components/typography";
+import { HatchingProgressBar } from "@alfalab/core-components/hatching-progress-bar";
 
 import { appSt } from "./style.css";
 import { thxSt } from "./thx/style.css.ts";
-import { HatchingProgressBar } from "@alfalab/core-components/hatching-progress-bar";
 
 export const App = () => {
   const [step, setStep] = useState(1);
   const [timerActive, setTimerActive] = useState(false);
-  const [timerActive2, setTimerActive2] = useState(false);
-  const [timerActive3, setTimerActive3] = useState(false);
   const [amount, setAmount] = useState(10000);
   const [checked, setChecked] = useState({
     checkbox_1: false,
@@ -35,9 +33,7 @@ export const App = () => {
   const [error, setError] = useState(false);
   const [expandMore, setExpandMore] = useState(false);
   const [scrollToDocs, setScrollToDocs] = useState(false);
-  const [bar1, setBar1] = useState(0);
-  const [bar2, setBar2] = useState(0);
-  const [bar3, setBar3] = useState(0);
+  const [bar, setBar] = useState(0);
 
   const divRef = useRef<HTMLDivElement>(null);
 
@@ -72,58 +68,25 @@ export const App = () => {
 
   useEffect(() => {
     let timer: number;
+    const startTime = Date.now();
 
     if (timerActive) {
       timer = setInterval(() => {
-        setBar1((prevState) => prevState + 2);
-      }, 100);
+        const elapsedMs = Date.now() - startTime;
+        const newBarValue = Math.min((elapsedMs / 20000) * 100, 100);
 
-      if (bar1 > 100) {
-        clearInterval(timer);
-        setTimerActive(false);
-        setTimerActive2(true);
-        setStep(4);
-      }
+        setBar(newBarValue);
+
+        if (elapsedMs >= 20000) {
+          setTimerActive(false);
+          clearInterval(timer);
+          LS.setItem(LSKeys.ShowThx, true);
+        }
+      }, 50);
     }
 
     return () => clearInterval(timer);
-  }, [timerActive, bar1]);
-
-  useEffect(() => {
-    let timer: number;
-
-    if (timerActive2) {
-      timer = setInterval(() => {
-        setBar2((prevState) => prevState + 2);
-      }, 100);
-
-      if (bar2 > 100) {
-        clearInterval(timer);
-        setTimerActive2(false);
-        setTimerActive3(true);
-        setStep(5);
-      }
-    }
-
-    return () => clearInterval(timer);
-  }, [timerActive2, bar2]);
-
-  useEffect(() => {
-    let timer: number;
-
-    if (timerActive3) {
-      timer = setInterval(() => {
-        setBar3((prevState) => prevState + 1);
-      }, 100);
-
-      if (bar3 > 100) {
-        setTimerActive3(false);
-        LS.setItem(LSKeys.ShowThx, true);
-      }
-    }
-
-    return () => clearInterval(timer);
-  }, [timerActive3, bar3]);
+  }, [timerActive]);
 
   if (LS.getItem(LSKeys.ShowThx, false)) {
     return <ThxLayout />;
@@ -556,34 +519,6 @@ export const App = () => {
         </div>
       )}
 
-      {step === 2 && (
-        <>
-          <div className={thxSt.container}>
-            <HatchingProgressBar
-              value={bar1}
-              hatchValue={100}
-              view="positive"
-              className={appSt.bar}
-            />
-            <Gap size={64} />
-            <Typography.TitleResponsive
-              font="system"
-              tag="h4"
-              view="small"
-              weight="medium"
-            >
-              Начинаем проверку данных
-            </Typography.TitleResponsive>
-            <Gap size={12} />
-            <Typography.Text tag="p" view="primary-medium" color="secondary">
-              Займёт около 30 секунд. Не выходите из приложения, чтобы не
-              оформлять всё сначала
-            </Typography.Text>
-            <Gap size={20} />
-          </div>
-        </>
-      )}
-
       {step === 3 && (
         <div className={appSt.container}>
           <Gap size={24} />
@@ -688,56 +623,54 @@ export const App = () => {
         </div>
       )}
 
-      {step === 4 && (
-        <>
-          <div className={thxSt.container}>
-            <HatchingProgressBar
-              value={bar2}
-              hatchValue={100}
-              view="positive"
-              className={appSt.bar}
-            />
-            <Gap size={64} />
-            <Typography.TitleResponsive
-              font="system"
-              tag="h4"
-              view="small"
-              weight="medium"
-            >
-              Проверяем кредитную историю
-            </Typography.TitleResponsive>
-            <Gap size={12} />
-            <Typography.Text tag="p" view="primary-medium" color="secondary">
-              Займёт около 30 секунд. Не выходите из приложения, чтобы не
-              оформлять всё с начала
-            </Typography.Text>
-            <Gap size={20} />
-          </div>
-        </>
-      )}
-
       {step === 5 && (
         <>
           <div className={thxSt.container}>
             <HatchingProgressBar
-              value={bar3}
+              value={bar}
               hatchValue={100}
               view="positive"
               className={appSt.bar}
             />
             <Gap size={64} />
-            <Typography.TitleResponsive
-              font="system"
-              tag="h4"
-              view="small"
-              weight="medium"
-            >
-              Подбираем лимит для комбо-счёта
-            </Typography.TitleResponsive>
+
+            {bar <= 25 && (
+              <Typography.TitleResponsive
+                font="system"
+                tag="h4"
+                view="small"
+                weight="medium"
+              >
+                Начинаем проверку данных
+              </Typography.TitleResponsive>
+            )}
+
+            {bar > 25 && bar <= 50 && (
+              <Typography.TitleResponsive
+                font="system"
+                tag="h4"
+                view="small"
+                weight="medium"
+              >
+                Проверяем кредитную историю
+              </Typography.TitleResponsive>
+            )}
+
+            {bar > 50 && (
+              <Typography.TitleResponsive
+                font="system"
+                tag="h4"
+                view="small"
+                weight="medium"
+              >
+                Подбираем лимит для комбо-счёта
+              </Typography.TitleResponsive>
+            )}
+
             <Gap size={12} />
             <Typography.Text tag="p" view="primary-medium" color="secondary">
               Займёт около 30 секунд. Не выходите из приложения, чтобы не
-              оформлять всё сначала
+              оформлять всё с начала
             </Typography.Text>
             <Gap size={20} />
           </div>
@@ -760,7 +693,7 @@ export const App = () => {
                 return;
               }
 
-              setStep(2);
+              setStep(5);
               setTimerActive(true);
             }}
             block
