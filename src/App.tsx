@@ -165,6 +165,12 @@ export const App = () => {
           </Typography.Text>
 
           <Gap size={32} />
+        </div>
+      )}
+
+      {step === 4 && (
+        <div className={appSt.container}>
+          <Gap size={24} />
 
           <Typography.TitleResponsive
             font="system"
@@ -469,30 +475,6 @@ export const App = () => {
             </div>
           </div>
 
-          <Gap size={16} />
-
-          <div
-            className={appSt.detail}
-            onClick={() => {
-              setStep(3);
-            }}
-            ref={divRef}
-          >
-            <DocumentsLinesMIcon
-              width="24"
-              style={{ marginRight: "1rem" }}
-              color="gray"
-            />
-
-            <Typography.Text
-              tag="p"
-              view="primary-medium"
-              style={{ marginBottom: 0 }}
-            >
-              Документы
-            </Typography.Text>
-          </div>
-
           <Gap size={32} />
 
           <Input
@@ -677,9 +659,24 @@ export const App = () => {
         </>
       )}
 
-      {step === 1 && <Gap size={96} />}
+      {(step === 1 || step === 4) && <Gap size={96} />}
 
       {step === 1 && (
+        <div className={appSt.bottomBtnThx}>
+          <ButtonMobile
+            onClick={() => {
+              setStep(4);
+            }}
+            block
+            view="primary"
+            href=""
+          >
+            Продолжить
+          </ButtonMobile>
+        </div>
+      )}
+
+      {step === 4 && (
         <div className={appSt.bottomBtnThx}>
           <ButtonMobile
             onClick={() => {
