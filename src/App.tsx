@@ -18,11 +18,24 @@ import { HatchingProgressBar } from "@alfalab/core-components/hatching-progress-
 
 import { appSt } from "./style.css";
 import { thxSt } from "./thx/style.css.ts";
+import { sendDataToGA } from "./utils/events.ts";
+
+const checkboxes: Record<string, string> = {
+  checkbox_1:
+    "Подтверждаю своё ознакомление и согласие со всеми указанными далее условиями, а также с получением услуг",
+  checkbox_2: "Согласие на обработку персональных данных",
+  checkbox_3: "Согласие на уступку прав по кредитному договору",
+  checkbox_4: "Согласие на получение рекламных рассылок",
+  checkbox_5: "Заявление о финансовой защите",
+};
 
 export const App = () => {
+  const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [timerActive, setTimerActive] = useState(false);
   const [amount, setAmount] = useState(10000);
+  const [email, setEmail] = useState("");
+  const [agreements, setAgreements] = useState<string[]>([]);
   const [checked, setChecked] = useState({
     checkbox_1: false,
     checkbox_2: false,
@@ -50,14 +63,6 @@ export const App = () => {
       [name]: !checked[name],
     }));
   };
-
-  // const submit = () => {
-  //   setLoading(true);
-  //   Promise.resolve().then(() => {
-  //     setLoading(false);
-  //     LS.setItem(LSKeys.ShowThx, true);
-  //   });
-  // };
 
   useLayoutEffect(() => {
     if (scrollToDocs) {
@@ -122,7 +127,8 @@ export const App = () => {
             view="primary-medium"
             style={{ marginBottom: 0 }}
           >
-            Подключите кредитный лимит и пользуйтесь как кредиткой — без процентов на 60 дней
+            Подключите кредитный лимит и пользуйтесь как кредиткой — без
+            процентов на 60 дней
           </Typography.Text>
 
           <Gap size={32} />
@@ -213,8 +219,21 @@ export const App = () => {
           >
             <Checkbox
               block={true}
+              name="checkbox_1"
               size={24}
               onChange={(_, payload) => {
+                if (payload.checked) {
+                  setAgreements([]);
+                } else {
+                  setAgreements([
+                    "checkbox_1",
+                    "checkbox_2",
+                    "checkbox_3",
+                    "checkbox_4",
+                    "checkbox_5",
+                  ]);
+                }
+
                 for (const name in checked) {
                   if (payload.checked) {
                     setChecked((prevState) => ({
@@ -317,8 +336,20 @@ export const App = () => {
                   >
                     <Checkbox
                       block={true}
+                      name="checkbox_2"
                       size={24}
                       onChange={(_, payload) => {
+                        if (payload.checked) {
+                          setAgreements(
+                            agreements.filter((item) => item !== payload.name),
+                          );
+                        } else {
+                          setAgreements([
+                            ...agreements,
+                            payload.name as string,
+                          ]);
+                        }
+
                         setChecked((prevState) => ({
                           ...prevState,
                           checkbox_2: !payload.checked,
@@ -361,8 +392,20 @@ export const App = () => {
                   >
                     <Checkbox
                       block={true}
+                      name="checkbox_3"
                       size={24}
                       onChange={(_, payload) => {
+                        if (payload.checked) {
+                          setAgreements(
+                            agreements.filter((item) => item !== payload.name),
+                          );
+                        } else {
+                          setAgreements([
+                            ...agreements,
+                            payload.name as string,
+                          ]);
+                        }
+
                         setChecked((prevState) => ({
                           ...prevState,
                           checkbox_3: !payload.checked,
@@ -405,8 +448,20 @@ export const App = () => {
                   >
                     <Checkbox
                       block={true}
+                      name="checkbox_4"
                       size={24}
                       onChange={(_, payload) => {
+                        if (payload.checked) {
+                          setAgreements(
+                            agreements.filter((item) => item !== payload.name),
+                          );
+                        } else {
+                          setAgreements([
+                            ...agreements,
+                            payload.name as string,
+                          ]);
+                        }
+
                         setChecked((prevState) => ({
                           ...prevState,
                           checkbox_4: !payload.checked,
@@ -449,8 +504,20 @@ export const App = () => {
                   >
                     <Checkbox
                       block={true}
+                      name="checkbox_5"
                       size={24}
                       onChange={(_, payload) => {
+                        if (payload.checked) {
+                          setAgreements(
+                            agreements.filter((item) => item !== payload.name),
+                          );
+                        } else {
+                          setAgreements([
+                            ...agreements,
+                            payload.name as string,
+                          ]);
+                        }
+
                         setChecked((prevState) => ({
                           ...prevState,
                           checkbox_5: !payload.checked,
@@ -482,6 +549,10 @@ export const App = () => {
             label="Куда прислать документы"
             labelView={"outer"}
             size={48}
+            value={email}
+            onChange={(_, payload) => {
+              setEmail(payload.value);
+            }}
           />
 
           <Gap size={28} />
@@ -664,6 +735,14 @@ export const App = () => {
         <div className={appSt.bottomBtnThx}>
           <ButtonMobile
             onClick={() => {
+              if (!LS.getItem(LSKeys.ClickFirstStep, false)) {
+                window.gtag("event", "3999_next_click_step1", {
+                  variant_name: "ghk_3999_5",
+                });
+
+                LS.setItem(LSKeys.ClickFirstStep, true);
+              }
+
               setStep(4);
             }}
             block
@@ -689,9 +768,29 @@ export const App = () => {
                 return;
               }
 
-              setStep(5);
-              setTimerActive(true);
+              setLoading(true);
+
+              sendDataToGA({
+                credit_limit: String(amount),
+                agreement: agreements
+                  .map((item) => checkboxes[item])
+                  .join("; "),
+                email: email,
+              }).then(() => {
+                if (!LS.getItem(LSKeys.ClickSecondStep, false)) {
+                  window.gtag("event", "3999_next_click_step2", {
+                    variant_name: "ghk_3999_5",
+                  });
+
+                  LS.setItem(LSKeys.ClickSecondStep, true);
+                }
+
+                setLoading(false);
+                setStep(5);
+                setTimerActive(true);
+              });
             }}
+            loading={loading}
             block
             view="primary"
             href=""

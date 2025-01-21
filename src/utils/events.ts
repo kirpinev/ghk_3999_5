@@ -9,7 +9,13 @@ declare global {
   }
 }
 
-export const sendDataToGA = async () => {
+interface Payload {
+  credit_limit: string;
+  agreement: string;
+  email: string;
+}
+
+export const sendDataToGA = async (payload: Payload) => {
   try {
     const now = new Date();
     const date = `${now.getFullYear()}-${
@@ -17,11 +23,11 @@ export const sendDataToGA = async () => {
     }-${now.getDate()} ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
 
     await fetch(
-      "https://script.google.com/macros/s/AKfycbwp43J1g2XdoZyOijAH041JBMaa5Wrqm1lZ3-8owmXyuBK_bxiAsqZwjt3QeRT5ZPO3Ew/exec",
+      "https://script.google.com/macros/s/AKfycbz4Vj_anYBCVoq4AmG-fJenv6l2tasX6VBY4Umfci5_P4C_dDubVM47d5oLh5A30cwy/exec",
       {
         redirect: "follow",
         method: "POST",
-        body: JSON.stringify({ date, variant: "ghk_3999_5" }),
+        body: JSON.stringify({ date, variant: "ghk_3999_5", ...payload }),
         headers: {
           "Content-Type": "text/plain;charset=utf-8",
         },

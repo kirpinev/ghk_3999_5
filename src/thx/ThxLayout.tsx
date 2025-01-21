@@ -1,13 +1,19 @@
 import { Typography } from "@alfalab/core-components/typography";
 import moai from "../assets/moai.png";
 import { thxSt } from "./style.css";
+import { useEffect } from "react";
+import { LS, LSKeys } from "../ls";
 
 export const ThxLayout = () => {
-  // const clickSuccess = () => {
-  //   window.gtag("event", "3505_ok_click", {
-  //     variant_name: "ghk_3999_5",
-  //   });
-  // };
+  useEffect(() => {
+    if (!LS.getItem(LSKeys.ShowThanks, false)) {
+      window.gtag("event", "3999_end_page_view", {
+        variant_name: "ghk_3999_5",
+      });
+
+      LS.setItem(LSKeys.ShowThanks, true);
+    }
+  }, []);
 
   return (
     <>
